@@ -165,20 +165,15 @@ const PasteNode = () => {
                   </div>
                 </>
               ) : (
-                <>
-                  <div className="text-xs font-medium text-blue-700">
-                    💡 Pro Tips:
-                  </div>
-                  <div className="text-xs text-blue-600">
-                    📋 Ctrl/Cmd + V works anywhere on screen
-                  </div>
-                  <div className="text-xs text-blue-600">
-                    🖱️ Drag & drop files to visualize content
-                  </div>
-                </>
+                <div className="text-xs text-blue-600">
+                  Drop files here or paste below
+                </div>
               )}
             </div>
             <div className="mt-3 space-y-1 rounded-lg border border-amber-200 bg-amber-50 p-2">
+              <div className="text-xs text-amber-600">
+                🔒 All data is stored securely in your browser only
+              </div>
               <div className="text-xs text-amber-600">
                 ⚠️ Clipboard API may have limited data access due to browser
                 security policies
