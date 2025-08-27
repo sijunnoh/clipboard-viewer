@@ -407,8 +407,18 @@ const ContentNode = ({ data, id }: ContentNodeProps) => {
 
     return (
       <div className="flex h-full flex-col">
-        <div className="mb-4 flex-shrink-0">
+        <div className="mb-4 flex flex-shrink-0 items-center justify-between">
           <h3 className="text-sm font-semibold text-blue-600">{data.type}</h3>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2.5 text-xs"
+            onClick={handleDownload}
+            title="Download file"
+          >
+            <DownloadIcon className="mr-1.5 h-3 w-3" />
+            Download
+          </Button>
         </div>
         <div className="min-h-0 flex-1">
           {type === "image" ? (
