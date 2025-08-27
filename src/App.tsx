@@ -392,6 +392,7 @@ function App() {
           edges={edges}
           onNodesChange={onNodesChange}
           nodeTypes={nodeTypes}
+          nodesDraggable={false}
           fitView
           minZoom={0.1}
           maxZoom={2}
