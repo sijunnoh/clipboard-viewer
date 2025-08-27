@@ -224,6 +224,7 @@ const PasteNode = () => {
               placeholder="Right Click → Paste"
               onPaste={onPaste}
               onInput={onInput}
+              inputMode="none"
               className="h-12 border-2 border-slate-200 transition-colors placeholder:text-slate-400 focus:border-blue-400"
             />
           </div>
