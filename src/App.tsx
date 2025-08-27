@@ -17,7 +17,7 @@ import PasteNode from "./components/react-flow/nodes/paste-node"
 import { useClipboardDataMapStore } from "./store/clipboard-data-map-store"
 
 function App() {
-  const { fitView, setCenter } = useReactFlow()
+  const { fitView } = useReactFlow()
 
   const {
     dataMap,
@@ -58,13 +58,12 @@ function App() {
     if (targetNode) {
       setActiveNodeId(targetNode.id)
 
-      const nodePosition = targetNode.position
-      setCenter(nodePosition.x + 160, nodePosition.y + 192, {
-        zoom: 1,
+      fitView({
         duration: 500,
+        nodes: [targetNode],
       })
     }
-  }, [contentNodes, activeNodeId, setActiveNodeId, setCenter])
+  }, [contentNodes, activeNodeId, setActiveNodeId, fitView])
 
   const handleNavigateDown = useCallback(() => {
     if (contentNodes.length === 0) return
@@ -85,24 +84,22 @@ function App() {
     if (targetNode) {
       setActiveNodeId(targetNode.id)
 
-      const nodePosition = targetNode.position
-      setCenter(nodePosition.x + 160, nodePosition.y + 192, {
-        zoom: 1,
+      fitView({
         duration: 500,
+        nodes: [targetNode],
       })
     }
-  }, [contentNodes, activeNodeId, setActiveNodeId, setCenter])
+  }, [contentNodes, activeNodeId, setActiveNodeId, fitView])
 
   const handleFocusActive = useCallback(() => {
     const activeNode = contentNodes.find((node) => node.id === activeNodeId)
     if (activeNode) {
-      const nodePosition = activeNode.position
-      setCenter(nodePosition.x + 160, nodePosition.y + 192, {
-        zoom: 1,
+      fitView({
         duration: 500,
+        nodes: [activeNode],
       })
     }
-  }, [contentNodes, activeNodeId, setCenter])
+  }, [contentNodes, activeNodeId, fitView])
 
   // Handle clipboard data processing
   const processClipboardData = useCallback(
