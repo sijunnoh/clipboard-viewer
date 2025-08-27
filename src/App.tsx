@@ -11,8 +11,8 @@ import type { Node, Edge, OnNodesChange } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 
 import AppHeader from "./components/app-header"
-import ContentNode from "./components/react-flow/nodes/content-node"
 import AdaptiveInfoNode from "./components/react-flow/nodes/adaptive-info-node"
+import ContentNode from "./components/react-flow/nodes/content-node"
 import PasteNode from "./components/react-flow/nodes/paste-node"
 import { useClipboardDataMapStore } from "./store/clipboard-data-map-store"
 
@@ -284,7 +284,9 @@ function App() {
 
     // Keep paste node and info node, clear all content nodes
     const pasteNode = nodes.find((node) => node.type === "pasteNode")
-    const existingAdaptiveNode = nodes.find((node) => node.type === "adaptiveInfoNode")
+    const existingAdaptiveNode = nodes.find(
+      (node) => node.type === "adaptiveInfoNode"
+    )
     const initialNodes = []
     if (pasteNode) initialNodes.push(pasteNode)
     if (existingAdaptiveNode) initialNodes.push(existingAdaptiveNode)
@@ -329,7 +331,9 @@ function App() {
 
     // Set first content node as active
     // Find the first content node (skip adaptive node)
-    const firstContentNode = newNodes.find(node => node.type === "contentNode")
+    const firstContentNode = newNodes.find(
+      (node) => node.type === "contentNode"
+    )
     if (firstContentNode) {
       setActiveNodeId(firstContentNode.id)
     } else {

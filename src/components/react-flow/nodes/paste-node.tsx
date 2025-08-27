@@ -8,12 +8,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useClipboardDataMapStore } from "@/store/clipboard-data-map-store"
 
@@ -36,8 +31,13 @@ const PasteNode = () => {
           if (!clipboardData.has(type)) {
             clipboardData.set(type, [])
           }
-          
-          if (type.startsWith('image/') || type.startsWith('video/') || type.startsWith('audio/') || type === 'application/pdf') {
+
+          if (
+            type.startsWith("image/") ||
+            type.startsWith("video/") ||
+            type.startsWith("audio/") ||
+            type === "application/pdf"
+          ) {
             // For media files and PDF, create object URL
             const objectUrl = URL.createObjectURL(blob)
             clipboardData.get(type)!.push(objectUrl)
@@ -66,11 +66,16 @@ const PasteNode = () => {
         clipboardData.set(item.type, [])
       }
 
-      if (item.kind === 'file') {
+      if (item.kind === "file") {
         // Handle files (images, videos, audio, PDF)
         const file = item.getAsFile()
         if (file) {
-          if (item.type.startsWith('image/') || item.type.startsWith('video/') || item.type.startsWith('audio/') || item.type === 'application/pdf') {
+          if (
+            item.type.startsWith("image/") ||
+            item.type.startsWith("video/") ||
+            item.type.startsWith("audio/") ||
+            item.type === "application/pdf"
+          ) {
             const objectUrl = URL.createObjectURL(file)
             clipboardData.get(item.type)!.push(objectUrl)
           } else {
@@ -93,7 +98,7 @@ const PasteNode = () => {
         }
       }
     }
-    
+
     if (clipboardData.size > 0) {
       setDataMap(clipboardData)
       setLastPastedType("Direct Paste")
@@ -121,7 +126,7 @@ const PasteNode = () => {
               <ClipboardPasteIcon className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="space-y-1 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
+          <CardTitle className="space-y-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-center text-2xl font-bold text-transparent">
             Clipboard Viewer
           </CardTitle>
           <div className="flex items-center justify-center gap-1 text-xs font-normal text-slate-500">
@@ -172,6 +177,15 @@ const PasteNode = () => {
                   </div>
                 </>
               )}
+            </div>
+            <div className="mt-3 space-y-1 rounded-lg border border-amber-200 bg-amber-50 p-2">
+              <div className="text-xs text-amber-600">
+                ⚠️ Clipboard API may have limited data access due to browser
+                security policies
+              </div>
+              <div className="text-xs text-amber-600">
+                💡 Try pasting with other methods for different results
+              </div>
             </div>
           </div>
         </CardHeader>
