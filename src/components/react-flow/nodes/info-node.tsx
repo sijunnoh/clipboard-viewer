@@ -51,7 +51,6 @@ const InfoNode = () => {
                 </div>
               </div>
             </div>
-
             {/* Feedback Section */}
             <div className="bg-white rounded-lg p-4 border border-purple-100">
               <div className="flex items-start gap-3">

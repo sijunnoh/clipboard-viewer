@@ -7,6 +7,11 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   TargetIcon,
+  MailIcon,
+  BugIcon,
+  LightbulbIcon,
+  CopyIcon,
+  CheckIcon,
 } from "lucide-react"
 
 import { useClipboardDataMapStore } from "@/store/clipboard-data-map-store"
@@ -37,6 +42,7 @@ const AppHeader = ({
   canNavigateDown,
 }: AppHeaderProps) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
   const { dataMap, setDataMap, setActiveNodeId } = useClipboardDataMapStore()
 
   const hasContent = dataMap.size > 0
@@ -44,6 +50,16 @@ const AppHeader = ({
   const handleReset = () => {
     setDataMap(new Map())
     setActiveNodeId(null)
+  }
+
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText("sijun.noh@mech2cs.com")
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy email:", err)
+    }
   }
 
   return (
@@ -201,11 +217,11 @@ const AppHeader = ({
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
-                        <span className="text-purple-500">📱</span>
+                        <span className="text-purple-500">💻</span>
                         <div>
-                          <div className="font-medium">Responsive Design</div>
+                          <div className="font-medium">Desktop Optimized</div>
                           <div className="text-gray-600">
-                            Works on desktop and mobile
+                            Best experience on desktop browsers
                           </div>
                         </div>
                       </div>
@@ -256,6 +272,45 @@ const AppHeader = ({
                     </div>
                     <div>• Use the reset button to clear all content nodes</div>
                     <div>• Global shortcuts work from anywhere in the app</div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-purple-700 flex items-center gap-2">
+                    <MailIcon className="h-4 w-4" />
+                    Feedback & Support
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <BugIcon className="h-4 w-4 text-red-400" />
+                        <span>Bug reports</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <LightbulbIcon className="h-4 w-4 text-yellow-400" />
+                        <span>Feature suggestions</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg border flex items-center justify-between gap-2">
+                      <p className="text-sm text-gray-700 font-mono break-all flex-1">
+                        sijun.noh@mech2cs.com
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={`h-8 w-8 p-0 flex-shrink-0 transition-colors ${
+                          copied ? "bg-green-100 text-green-600" : ""
+                        }`}
+                        onClick={handleCopyEmail}
+                        title={copied ? "Copied!" : "Copy email address"}
+                      >
+                        {copied ? (
+                          <CheckIcon className="h-4 w-4" />
+                        ) : (
+                          <CopyIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
