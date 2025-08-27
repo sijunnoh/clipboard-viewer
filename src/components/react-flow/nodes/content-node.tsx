@@ -13,6 +13,7 @@ import {
   FileIcon,
   BracketsIcon,
   DownloadIcon,
+  CheckIcon,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,7 @@ interface ContentNodeProps {
 
 const ContentNode = ({ data, id }: ContentNodeProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
   const { activeNodeId } = useClipboardDataMapStore()
 
   const isActive = activeNodeId === id
@@ -278,8 +280,14 @@ const ContentNode = ({ data, id }: ContentNodeProps) => {
     )
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(data.content)
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(data.content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy:", err)
+    }
   }
 
   const handleDownload = async () => {
@@ -600,11 +608,17 @@ const ContentNode = ({ data, id }: ContentNodeProps) => {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0"
+                className={`h-6 w-6 p-0 transition-colors ${
+                  copied ? "bg-green-100 text-green-600" : ""
+                }`}
                 onClick={handleCopy}
-                title="Copy to clipboard"
+                title={copied ? "Copied!" : "Copy to clipboard"}
               >
-                <CopyIcon className="h-3 w-3" />
+                {copied ? (
+                  <CheckIcon className="h-3 w-3" />
+                ) : (
+                  <CopyIcon className="h-3 w-3" />
+                )}
               </Button>
               <Button
                 size="sm"
