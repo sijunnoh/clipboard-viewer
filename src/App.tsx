@@ -12,7 +12,7 @@ import "@xyflow/react/dist/style.css"
 
 import AppHeader from "./components/app-header"
 import ContentNode from "./components/react-flow/nodes/content-node"
-import InfoNode from "./components/react-flow/nodes/info-node"
+import AdaptiveInfoNode from "./components/react-flow/nodes/adaptive-info-node"
 import PasteNode from "./components/react-flow/nodes/paste-node"
 import { useClipboardDataMapStore } from "./store/clipboard-data-map-store"
 
@@ -284,25 +284,25 @@ function App() {
 
     // Keep paste node and info node, clear all content nodes
     const pasteNode = nodes.find((node) => node.type === "pasteNode")
-    const existingInfoNode = nodes.find((node) => node.type === "infoNode")
+    const existingAdaptiveNode = nodes.find((node) => node.type === "adaptiveInfoNode")
     const initialNodes = []
     if (pasteNode) initialNodes.push(pasteNode)
-    if (existingInfoNode) initialNodes.push(existingInfoNode)
+    if (existingAdaptiveNode) initialNodes.push(existingAdaptiveNode)
 
-    // Add info node if it doesn't exist
-    if (!existingInfoNode) {
-      const infoNode: Node = {
-        id: `info-${Date.now()}`,
-        type: "infoNode",
+    // Add adaptive node if it doesn't exist
+    if (!existingAdaptiveNode) {
+      const adaptiveNode: Node = {
+        id: `adaptive-${Date.now()}`,
+        type: "adaptiveInfoNode",
         position: { x: 500, y: 250 }, // Same y as paste-node (250) for first position
         data: {},
       }
-      newNodes.push(infoNode)
+      newNodes.push(adaptiveNode)
       currentNodeId++
     }
 
     // Create a separate node for each content item
-    let nodeIndex = 1 // Start from index 1 since info node always exists
+    let nodeIndex = 1 // Start from index 1 since adaptive node always exists
     Array.from(dataMap.entries()).forEach(([type, values]) => {
       values.forEach((content) => {
         const yOffset = nodeIndex * 420 // Increased spacing for taller nodes
@@ -310,7 +310,7 @@ function App() {
         const newNode: Node = {
           id: `${currentNodeId}`,
           type: "contentNode",
-          position: { x: 500, y: 250 + yOffset }, // Position after info node
+          position: { x: 500, y: 250 + yOffset }, // Position after adaptive node
           data: {
             type,
             content,
@@ -324,11 +324,11 @@ function App() {
       })
     })
 
-    // Replace all nodes with paste node + info node + content nodes
+    // Replace all nodes with paste node + adaptive node + content nodes
     setNodes([...initialNodes, ...newNodes])
 
     // Set first content node as active
-    // Find the first content node (skip info node)
+    // Find the first content node (skip adaptive node)
     const firstContentNode = newNodes.find(node => node.type === "contentNode")
     if (firstContentNode) {
       setActiveNodeId(firstContentNode.id)
@@ -352,8 +352,8 @@ function App() {
           data: {},
         },
         {
-          id: "info-initial",
-          type: "infoNode",
+          id: "adaptive-initial",
+          type: "adaptiveInfoNode",
           position: { x: 500, y: 250 },
           data: {},
         },
@@ -365,7 +365,7 @@ function App() {
     () => ({
       pasteNode: PasteNode,
       contentNode: ContentNode,
-      infoNode: InfoNode,
+      adaptiveInfoNode: AdaptiveInfoNode,
     }),
     []
   )
