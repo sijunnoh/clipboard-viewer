@@ -11,7 +11,7 @@ import type { Node, Edge, OnNodesChange } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 
 import AppHeader from "./components/app-header"
-import AdaptiveInfoNode from "./components/react-flow/nodes/adaptive-info-node"
+import AdsterraNode from "./components/react-flow/nodes/adsterra-node"
 import ContentNode from "./components/react-flow/nodes/content-node"
 import PasteNode from "./components/react-flow/nodes/paste-node"
 import { useClipboardDataMapStore } from "./store/clipboard-data-map-store"
@@ -35,26 +35,34 @@ function App() {
     // Remove automatic fitView to avoid conflicts with navigation
   }, [])
 
-  // Get content nodes only (excluding paste node)
-  const contentNodes = nodes.filter((node) => node.type === "contentNode")
+  // Get navigable nodes (content nodes + adsterra node, excluding paste node)
+  const navigableNodes = nodes.filter(
+    (node) => node.type === "contentNode" || node.type === "adaptiveInfoNode"
+  )
+  // Keep contentNodes for backward compatibility with existing logic
+  // const contentNodes = nodes.filter((node) => node.type === "contentNode")
 
   // Navigation functions
   const handleNavigateUp = useCallback(() => {
-    if (contentNodes.length === 0) return
+    if (navigableNodes.length === 0) return
 
-    const currentIndex = contentNodes.findIndex(
+    const currentIndex = navigableNodes.findIndex(
       (node) => node.id === activeNodeId
     )
     let prevIndex
 
     if (currentIndex === -1) {
-      // If no active node found, start from the first one
-      prevIndex = 0
+      // If no active node found, start from the first content node (not adsterra)
+      const firstContentIndex = navigableNodes.findIndex(
+        (node) => node.type === "contentNode"
+      )
+      prevIndex = firstContentIndex !== -1 ? firstContentIndex : 0
     } else {
-      prevIndex = currentIndex > 0 ? currentIndex - 1 : contentNodes.length - 1
+      prevIndex =
+        currentIndex > 0 ? currentIndex - 1 : navigableNodes.length - 1
     }
 
-    const targetNode = contentNodes[prevIndex]
+    const targetNode = navigableNodes[prevIndex]
     if (targetNode) {
       setActiveNodeId(targetNode.id)
 
@@ -63,24 +71,28 @@ function App() {
         nodes: [targetNode],
       })
     }
-  }, [contentNodes, activeNodeId, setActiveNodeId, fitView])
+  }, [navigableNodes, activeNodeId, setActiveNodeId, fitView])
 
   const handleNavigateDown = useCallback(() => {
-    if (contentNodes.length === 0) return
+    if (navigableNodes.length === 0) return
 
-    const currentIndex = contentNodes.findIndex(
+    const currentIndex = navigableNodes.findIndex(
       (node) => node.id === activeNodeId
     )
     let nextIndex
 
     if (currentIndex === -1) {
-      // If no active node found, start from the first one
-      nextIndex = 0
+      // If no active node found, start from the first content node (not adsterra)
+      const firstContentIndex = navigableNodes.findIndex(
+        (node) => node.type === "contentNode"
+      )
+      nextIndex = firstContentIndex !== -1 ? firstContentIndex : 0
     } else {
-      nextIndex = currentIndex < contentNodes.length - 1 ? currentIndex + 1 : 0
+      nextIndex =
+        currentIndex < navigableNodes.length - 1 ? currentIndex + 1 : 0
     }
 
-    const targetNode = contentNodes[nextIndex]
+    const targetNode = navigableNodes[nextIndex]
     if (targetNode) {
       setActiveNodeId(targetNode.id)
 
@@ -89,17 +101,17 @@ function App() {
         nodes: [targetNode],
       })
     }
-  }, [contentNodes, activeNodeId, setActiveNodeId, fitView])
+  }, [navigableNodes, activeNodeId, setActiveNodeId, fitView])
 
   const handleFocusActive = useCallback(() => {
-    const activeNode = contentNodes.find((node) => node.id === activeNodeId)
+    const activeNode = navigableNodes.find((node) => node.id === activeNodeId)
     if (activeNode) {
       fitView({
         duration: 500,
         nodes: [activeNode],
       })
     }
-  }, [contentNodes, activeNodeId, fitView])
+  }, [navigableNodes, activeNodeId, fitView])
 
   // Handle clipboard data processing
   const processClipboardData = useCallback(
@@ -366,7 +378,7 @@ function App() {
     () => ({
       pasteNode: PasteNode,
       contentNode: ContentNode,
-      adaptiveInfoNode: AdaptiveInfoNode,
+      adaptiveInfoNode: AdsterraNode,
     }),
     []
   )
@@ -383,8 +395,8 @@ function App() {
         onNavigateUp={handleNavigateUp}
         onNavigateDown={handleNavigateDown}
         onFocusActive={handleFocusActive}
-        canNavigateUp={contentNodes.length > 1}
-        canNavigateDown={contentNodes.length > 1}
+        canNavigateUp={navigableNodes.length > 1}
+        canNavigateDown={navigableNodes.length > 1}
       />
       <div style={{ paddingTop: "64px", height: "100%" }}>
         <ReactFlow
