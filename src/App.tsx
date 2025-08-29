@@ -10,8 +10,9 @@ import {
 import type { Node, Edge, OnNodesChange } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 
+import AdaptiveInfoNode from "@/components/react-flow/nodes/adaptive-info-node"
+
 import AppHeader from "./components/app-header"
-import AdsterraNode from "./components/react-flow/nodes/adsterra-node"
 import ContentNode from "./components/react-flow/nodes/content-node"
 import PasteNode from "./components/react-flow/nodes/paste-node"
 import { useClipboardDataMapStore } from "./store/clipboard-data-map-store"
@@ -378,7 +379,7 @@ function App() {
     () => ({
       pasteNode: PasteNode,
       contentNode: ContentNode,
-      adaptiveInfoNode: AdsterraNode,
+      adaptiveInfoNode: AdaptiveInfoNode,
     }),
     []
   )
