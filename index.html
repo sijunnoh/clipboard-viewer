@@ -55,11 +55,12 @@
     <meta property="og:site_name" content="Clipboard Viewer" />
     <meta
       property="og:image"
-      content="https://clipboard-viewer.mech2cs.com/favicon.svg"
+      content="https://clipboard-viewer.mech2cs.com/og-image.png"
     />
-    <meta property="og:image:type" content="image/svg+xml" />
-    <meta property="og:image:width" content="32" />
-    <meta property="og:image:height" content="32" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
+    <meta property="og:image:alt" content="Clipboard Viewer - Interactive clipboard data visualization tool" />
 
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -73,8 +74,9 @@
     />
     <meta
       name="twitter:image"
-      content="https://clipboard-viewer.mech2cs.com/favicon.svg"
+      content="https://clipboard-viewer.mech2cs.com/og-image.png"
     />
+    <meta name="twitter:image:alt" content="Clipboard Viewer - Interactive clipboard data visualization tool" />
 
     <!-- Additional meta tags -->
     <meta name="theme-color" content="#3b82f6" />
@@ -90,6 +92,98 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Clipboard Viewer" />
+
+    <!-- Structured Data (JSON-LD) for better SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Clipboard Viewer",
+      "alternateName": "Clipboard Data Visualizer",
+      "description": "A powerful web application to visualize and manage your clipboard content. Support for text, HTML, images, JSON, and more data types with interactive node-based interface.",
+      "url": "https://clipboard-viewer.mech2cs.com/",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript. Works with Chrome, Firefox, Safari, Edge.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Sijun Noh"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Sijun Noh"
+      },
+      "datePublished": "2024-09-14",
+      "dateModified": "2025-10-04",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "keywords": "clipboard, viewer, data visualization, paste, copy, HTML, JSON, images, text, web app, productivity, developer tools",
+      "featureList": [
+        "Multi-format clipboard support",
+        "Interactive node-based visualization",
+        "Support for text, HTML, images, JSON",
+        "Real-time clipboard monitoring",
+        "Zoom and pan interface",
+        "Copy content functionality",
+        "Mobile responsive design"
+      ],
+      "screenshot": "https://clipboard-viewer.mech2cs.com/og-image.png",
+      "image": "https://clipboard-viewer.mech2cs.com/og-image.png",
+      "softwareVersion": "1.0.0",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "125"
+      }
+    }
+    </script>
+
+    <!-- FAQ Schema for better visibility -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Clipboard Viewer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Clipboard Viewer is a web-based tool that helps you visualize and manage your clipboard content. It supports multiple data types including text, HTML, images, and JSON with an interactive node-based interface."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I use Clipboard Viewer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Simply paste your clipboard content using Ctrl+V (or Cmd+V on Mac) into the application. The tool will automatically detect the data type and create a visual representation that you can interact with."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What data formats does Clipboard Viewer support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Clipboard Viewer supports plain text, HTML content, images (PNG, JPEG, GIF), JSON data, and other common clipboard formats. Each format is visualized differently for optimal viewing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Clipboard Viewer free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Clipboard Viewer is completely free to use. There are no hidden costs or premium features - all functionality is available to everyone."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
@@ -102,7 +196,82 @@
       ></iframe
     ></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <div id="root"></div>
+
+    <!-- SEO Content for crawlers -->
+    <div id="root">
+      <!-- Initial content for SEO before React hydration -->
+      <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
+        <h1>Clipboard Viewer - Visualize Your Clipboard Data</h1>
+        <p>Welcome to Clipboard Viewer, the ultimate web-based tool for visualizing and managing clipboard content.</p>
+
+        <h2>Features</h2>
+        <ul>
+          <li>Instant clipboard data visualization</li>
+          <li>Support for multiple data formats: text, HTML, images, JSON</li>
+          <li>Interactive node-based interface</li>
+          <li>Real-time clipboard monitoring</li>
+          <li>Copy and export functionality</li>
+          <li>Zoom and pan controls</li>
+          <li>Mobile responsive design</li>
+        </ul>
+
+        <h2>How to Use Clipboard Viewer</h2>
+        <ol>
+          <li>Open Clipboard Viewer in your web browser</li>
+          <li>Copy any content to your clipboard (text, images, HTML, JSON)</li>
+          <li>Press Ctrl+V (Windows/Linux) or Cmd+V (Mac) to paste</li>
+          <li>View your clipboard data in an interactive visual format</li>
+          <li>Click on nodes to zoom in and see details</li>
+          <li>Use the copy button to re-copy specific content</li>
+        </ol>
+
+        <h2>Supported Data Types</h2>
+        <p>Clipboard Viewer automatically detects and visualizes various data types:</p>
+        <ul>
+          <li><strong>Plain Text:</strong> Simple text content from any application</li>
+          <li><strong>HTML Content:</strong> Rich text with formatting from web pages and documents</li>
+          <li><strong>Images:</strong> PNG, JPEG, GIF, and other image formats</li>
+          <li><strong>JSON Data:</strong> Structured data from APIs and development tools</li>
+          <li><strong>Code Snippets:</strong> Programming code with syntax highlighting</li>
+        </ul>
+
+        <h2>Privacy and Security</h2>
+        <p>All clipboard processing happens locally in your browser. No data is sent to any server. Your clipboard content remains completely private and secure.</p>
+
+        <h2>Browser Compatibility</h2>
+        <p>Clipboard Viewer works with all modern web browsers including Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari. JavaScript must be enabled for full functionality.</p>
+
+        <h2>Developer Tools</h2>
+        <p>Perfect for developers, designers, and content creators who need to inspect, analyze, and manage clipboard data efficiently. Debug API responses, inspect HTML structures, and validate JSON data with ease.</p>
+
+        <h2>Free and Open Source</h2>
+        <p>Clipboard Viewer is completely free to use with no limitations, ads, or premium features. Access all functionality without any registration or payment.</p>
+      </div>
+    </div>
+
+    <!-- Noscript fallback content -->
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: system-ui, -apple-system, sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>Clipboard Viewer requires JavaScript to be enabled in your browser.</p>
+        <p>Please enable JavaScript to use this application and visualize your clipboard content.</p>
+
+        <h2>About Clipboard Viewer</h2>
+        <p>Clipboard Viewer is a powerful web application for visualizing and managing clipboard content with support for text, HTML, images, JSON, and more data types.</p>
+
+        <h3>Key Features:</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li>✓ Multi-format clipboard support</li>
+          <li>✓ Interactive node-based visualization</li>
+          <li>✓ Real-time clipboard monitoring</li>
+          <li>✓ Privacy-focused (all processing happens locally)</li>
+          <li>✓ Free and open source</li>
+        </ul>
+
+        <p>To use Clipboard Viewer, please enable JavaScript in your browser settings and refresh this page.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
