@@ -14,6 +14,8 @@ import {
   CheckIcon,
 } from "lucide-react"
 
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
+import { CONTACT_EMAIL } from "@/lib/constants"
 import { useClipboardDataMapStore } from "@/store/clipboard-data-map-store"
 
 import { Button } from "./ui/button"
@@ -42,7 +44,7 @@ const AppHeader = ({
   canNavigateDown,
 }: AppHeaderProps) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const { copied, copy } = useCopyToClipboard()
   const { dataMap, setDataMap, setActiveNodeId } = useClipboardDataMapStore()
 
   const hasContent = dataMap.size > 0
@@ -52,27 +54,10 @@ const AppHeader = ({
     setActiveNodeId(null)
   }
 
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText("sijun.noh@mech2cs.com")
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Failed to copy email:", err)
-    }
-  }
-
   return (
     <>
       <header
         className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-        }}
       >
         <div className="container mx-auto flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
@@ -99,6 +84,7 @@ const AppHeader = ({
                     onClick={onNavigateUp}
                     disabled={!canNavigateUp}
                     className="h-8 w-8 rounded-r-none p-0"
+                    aria-label="Navigate to previous node"
                     title="Navigate to previous node"
                   >
                     <ChevronUpIcon className="size-4" />
@@ -108,6 +94,7 @@ const AppHeader = ({
                     size="sm"
                     onClick={onFocusActive}
                     className="h-8 w-8 rounded-none border-r border-l p-0"
+                    aria-label="Focus on active node"
                     title="Focus on active node"
                   >
                     <TargetIcon className="size-4" />
@@ -118,6 +105,7 @@ const AppHeader = ({
                     onClick={onNavigateDown}
                     disabled={!canNavigateDown}
                     className="h-8 w-8 rounded-l-none p-0"
+                    aria-label="Navigate to next node"
                     title="Navigate to next node"
                   >
                     <ChevronDownIcon className="size-4" />
@@ -128,6 +116,7 @@ const AppHeader = ({
                   size="sm"
                   onClick={handleReset}
                   className="h-8 w-8 p-0"
+                  aria-label="Reset all content"
                   title="Reset all content"
                 >
                   <RotateCcwIcon className="size-4" />
@@ -139,6 +128,7 @@ const AppHeader = ({
               size="sm"
               onClick={() => setIsHelpOpen(true)}
               className="h-8 w-8 p-0"
+              aria-label="Help"
               title="Help"
             >
               <HelpCircleIcon className="size-4" />
@@ -293,7 +283,7 @@ const AppHeader = ({
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg border flex items-center justify-between gap-2">
                       <p className="text-sm text-gray-700 font-mono break-all flex-1">
-                        sijun.noh@mech2cs.com
+                        {CONTACT_EMAIL}
                       </p>
                       <Button
                         size="sm"
@@ -301,7 +291,7 @@ const AppHeader = ({
                         className={`h-8 w-8 p-0 flex-shrink-0 transition-colors ${
                           copied ? "bg-green-100 text-green-600" : ""
                         }`}
-                        onClick={handleCopyEmail}
+                        onClick={() => copy(CONTACT_EMAIL)}
                         title={copied ? "Copied!" : "Copy email address"}
                       >
                         {copied ? (

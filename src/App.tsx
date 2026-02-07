@@ -10,7 +10,9 @@ import {
 import type { Node, Edge, OnNodesChange } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 
-import AdaptiveInfoNode from "@/components/react-flow/nodes/adaptive-info-node"
+import InfoNode from "@/components/react-flow/nodes/info-node"
+import { parseFiles, parsePasteItems } from "@/lib/clipboard-parser"
+import { FIT_VIEW_DURATION, FIT_VIEW_DELAY, NODE_VERTICAL_SPACING } from "@/lib/constants"
 
 import AppHeader from "./components/app-header"
 import ContentNode from "./components/react-flow/nodes/content-node"
@@ -36,12 +38,13 @@ function App() {
     // Remove automatic fitView to avoid conflicts with navigation
   }, [])
 
-  // Get navigable nodes (content nodes + adsterra node, excluding paste node)
-  const navigableNodes = nodes.filter(
-    (node) => node.type === "contentNode" || node.type === "adaptiveInfoNode"
+  // Get navigable nodes (content nodes + info node, excluding paste node)
+  const navigableNodes = useMemo(
+    () => nodes.filter(
+      (node) => node.type === "contentNode" || node.type === "infoNode"
+    ),
+    [nodes]
   )
-  // Keep contentNodes for backward compatibility with existing logic
-  // const contentNodes = nodes.filter((node) => node.type === "contentNode")
 
   // Navigation functions
   const handleNavigateUp = useCallback(() => {
@@ -53,7 +56,6 @@ function App() {
     let prevIndex
 
     if (currentIndex === -1) {
-      // If no active node found, start from the first content node (not adsterra)
       const firstContentIndex = navigableNodes.findIndex(
         (node) => node.type === "contentNode"
       )
@@ -68,7 +70,7 @@ function App() {
       setActiveNodeId(targetNode.id)
 
       fitView({
-        duration: 500,
+        duration: FIT_VIEW_DURATION,
         nodes: [targetNode],
       })
     }
@@ -83,7 +85,6 @@ function App() {
     let nextIndex
 
     if (currentIndex === -1) {
-      // If no active node found, start from the first content node (not adsterra)
       const firstContentIndex = navigableNodes.findIndex(
         (node) => node.type === "contentNode"
       )
@@ -98,7 +99,7 @@ function App() {
       setActiveNodeId(targetNode.id)
 
       fitView({
-        duration: 500,
+        duration: FIT_VIEW_DURATION,
         nodes: [targetNode],
       })
     }
@@ -108,7 +109,7 @@ function App() {
     const activeNode = navigableNodes.find((node) => node.id === activeNodeId)
     if (activeNode) {
       fitView({
-        duration: 500,
+        duration: FIT_VIEW_DURATION,
         nodes: [activeNode],
       })
     }
@@ -126,31 +127,7 @@ function App() {
   // Handle file drops
   const handleFileDrop = useCallback(
     async (files: FileList) => {
-      const clipboardData = new Map<string, string[]>()
-
-      for (const file of Array.from(files)) {
-        const type = file.type || "application/octet-stream"
-
-        if (!clipboardData.has(type)) {
-          clipboardData.set(type, [])
-        }
-
-        if (
-          file.type.startsWith("image/") ||
-          file.type.startsWith("video/") ||
-          file.type.startsWith("audio/") ||
-          file.type === "application/pdf"
-        ) {
-          // Use URL.createObjectURL for media files and PDF
-          const objectUrl = URL.createObjectURL(file)
-          clipboardData.get(type)!.push(objectUrl)
-        } else {
-          // Read as text
-          const text = await file.text()
-          clipboardData.get(type)!.push(text)
-        }
-      }
-
+      const clipboardData = await parseFiles(files)
       processClipboardData(clipboardData, "Drag & Drop")
     },
     [processClipboardData]
@@ -180,7 +157,6 @@ function App() {
       e.preventDefault()
       e.stopPropagation()
 
-      // Use relatedTarget to check if we're leaving to outside the browser
       if (
         !e.relatedTarget ||
         !e.currentTarget.contains(e.relatedTarget as Element)
@@ -197,21 +173,21 @@ function App() {
       setIsDragOver(false)
     }
 
-    document.addEventListener("dragleave", (e) => {
-      // If dragleave happens on document and clientX/Y are 0, it's likely outside browser
+    const handleDragLeaveDocument = (e: DragEvent) => {
       if (
         e.target === document.documentElement &&
         (e.clientX === 0 || e.clientY === 0)
       ) {
         setIsDragOver(false)
       }
-    })
+    }
 
+    document.addEventListener("dragleave", handleDragLeaveDocument)
     document.addEventListener("mouseleave", handleMouseLeave)
 
     return () => {
       document.removeEventListener("mouseleave", handleMouseLeave)
-      document.removeEventListener("dragleave", handleMouseLeave)
+      document.removeEventListener("dragleave", handleDragLeaveDocument)
     }
   }, [setIsDragOver])
 
@@ -231,10 +207,10 @@ function App() {
   // Global paste event handler
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
-      // Don't interfere if user is pasting in an input/textarea
       if (
         event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target instanceof HTMLElement && event.target.isContentEditable)
       ) {
         return
       }
@@ -242,40 +218,10 @@ function App() {
       event.preventDefault()
       if (!event.clipboardData) return
 
-      const clipboardData = new Map<string, string[]>()
-
-      for (const item of event.clipboardData.items) {
-        if (!clipboardData.has(item.type)) {
-          clipboardData.set(item.type, [])
-        }
-
-        if (item.kind === "file") {
-          // Handle files (images, videos, audio, PDF)
-          const file = item.getAsFile()
-          if (file) {
-            if (
-              item.type.startsWith("image/") ||
-              item.type.startsWith("video/") ||
-              item.type.startsWith("audio/") ||
-              item.type === "application/pdf"
-            ) {
-              const objectUrl = URL.createObjectURL(file)
-              clipboardData.get(item.type)!.push(objectUrl)
-            } else {
-              // For other file types, show file info
-              clipboardData
-                .get(item.type)!
-                .push(`File: ${file.name || "clipboard"} (${file.size} bytes)`)
-            }
-          }
-        } else {
-          // Handle text data
-          const data = event.clipboardData.getData(item.type)
-          if (data) {
-            clipboardData.get(item.type)!.push(data)
-          }
-        }
-      }
+      const clipboardData = parsePasteItems(
+        event.clipboardData.items,
+        event.clipboardData
+      )
 
       if (clipboardData.size > 0) {
         processClipboardData(clipboardData, "Global Paste")
@@ -290,39 +236,36 @@ function App() {
     const timestamp = new Date().toLocaleTimeString("en-US")
 
     const newNodes: Node[] = []
-    let currentNodeId = 2 // Reset to initial node ID
+    let currentNodeId = 2
 
-    // Keep paste node and info node, clear all content nodes
     const pasteNode = nodes.find((node) => node.type === "pasteNode")
-    const existingAdaptiveNode = nodes.find(
-      (node) => node.type === "adaptiveInfoNode"
+    const existingInfoNode = nodes.find(
+      (node) => node.type === "infoNode"
     )
     const initialNodes = []
     if (pasteNode) initialNodes.push(pasteNode)
-    if (existingAdaptiveNode) initialNodes.push(existingAdaptiveNode)
+    if (existingInfoNode) initialNodes.push(existingInfoNode)
 
-    // Add adaptive node if it doesn't exist
-    if (!existingAdaptiveNode) {
-      const adaptiveNode: Node = {
-        id: `adaptive-${Date.now()}`,
-        type: "adaptiveInfoNode",
-        position: { x: 500, y: 250 }, // Same y as paste-node (250) for first position
+    if (!existingInfoNode) {
+      const infoNode: Node = {
+        id: `info-${Date.now()}`,
+        type: "infoNode",
+        position: { x: 500, y: 250 },
         data: {},
       }
-      newNodes.push(adaptiveNode)
+      newNodes.push(infoNode)
       currentNodeId++
     }
 
-    // Create a separate node for each content item
-    let nodeIndex = 1 // Start from index 1 since adaptive node always exists
+    let nodeIndex = 1
     Array.from(dataMap.entries()).forEach(([type, values]) => {
       values.forEach((content) => {
-        const yOffset = nodeIndex * 420 // Increased spacing for taller nodes
+        const yOffset = nodeIndex * NODE_VERTICAL_SPACING
 
         const newNode: Node = {
           id: `${currentNodeId}`,
           type: "contentNode",
-          position: { x: 500, y: 250 + yOffset }, // Position after adaptive node
+          position: { x: 500, y: 250 + yOffset },
           data: {
             type,
             content,
@@ -336,25 +279,23 @@ function App() {
       })
     })
 
-    // Replace all nodes with paste node + adaptive node + content nodes
     setNodes([...initialNodes, ...newNodes])
 
-    // Set first content node as active
-    // Find the first content node (skip adaptive node)
     const firstContentNode = newNodes.find(
       (node) => node.type === "contentNode"
     )
     if (firstContentNode) {
       setActiveNodeId(firstContentNode.id)
     } else {
-      // If no content nodes, clear active node
       setActiveNodeId(null)
     }
 
-    setTimeout(() => {
-      fitView({ duration: 500 })
-    }, 50)
-  }, [dataMap])
+    const timeoutId = setTimeout(() => {
+      fitView({ duration: FIT_VIEW_DURATION })
+    }, FIT_VIEW_DELAY)
+
+    return () => clearTimeout(timeoutId)
+  }, [dataMap, setNodes, setActiveNodeId, fitView])
 
   useEffect(() => {
     if (nodes.length === 0) {
@@ -366,8 +307,8 @@ function App() {
           data: {},
         },
         {
-          id: "adaptive-initial",
-          type: "adaptiveInfoNode",
+          id: "info-initial",
+          type: "infoNode",
           position: { x: 500, y: 250 },
           data: {},
         },
@@ -379,7 +320,7 @@ function App() {
     () => ({
       pasteNode: PasteNode,
       contentNode: ContentNode,
-      adaptiveInfoNode: AdaptiveInfoNode,
+      infoNode: InfoNode,
     }),
     []
   )

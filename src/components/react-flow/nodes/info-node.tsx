@@ -1,5 +1,3 @@
-import { useState } from "react"
-
 import {
   InfoIcon,
   MailIcon,
@@ -11,19 +9,11 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
+import { CONTACT_EMAIL } from "@/lib/constants"
 
 const InfoNode = () => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText("sijun.noh@mech2cs.com")
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Failed to copy email:", err)
-    }
-  }
+  const { copied, copy } = useCopyToClipboard()
 
   return (
     <>
@@ -71,7 +61,7 @@ const InfoNode = () => {
                   </div>
                   <div className="mt-2 p-2 bg-gray-50 rounded border flex items-center justify-between gap-2">
                     <p className="text-xs text-gray-700 font-mono break-all flex-1">
-                      sijun.noh@mech2cs.com
+                      {CONTACT_EMAIL}
                     </p>
                     <Button
                       size="sm"
@@ -79,7 +69,8 @@ const InfoNode = () => {
                       className={`h-6 w-6 p-0 flex-shrink-0 transition-colors ${
                         copied ? "bg-green-100 text-green-600" : ""
                       }`}
-                      onClick={handleCopyEmail}
+                      onClick={() => copy(CONTACT_EMAIL)}
+                      aria-label={copied ? "Copied" : "Copy email address"}
                       title={copied ? "Copied!" : "Copy email address"}
                     >
                       {copied ? (

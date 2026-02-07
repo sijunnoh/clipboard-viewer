@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { parseClipboardApi, parsePasteItems } from "@/lib/clipboard-parser"
 import { useClipboardDataMapStore } from "@/store/clipboard-data-map-store"
 
 const PasteNode = () => {
@@ -23,31 +24,7 @@ const PasteNode = () => {
     try {
       setIsApiLoading(true)
       const clipboardContents = await navigator.clipboard.read()
-      const clipboardData = new Map<string, string[]>()
-
-      for (const item of clipboardContents) {
-        for (const type of item.types) {
-          const blob = await item.getType(type)
-          if (!clipboardData.has(type)) {
-            clipboardData.set(type, [])
-          }
-
-          if (
-            type.startsWith("image/") ||
-            type.startsWith("video/") ||
-            type.startsWith("audio/") ||
-            type === "application/pdf"
-          ) {
-            // For media files and PDF, create object URL
-            const objectUrl = URL.createObjectURL(blob)
-            clipboardData.get(type)!.push(objectUrl)
-          } else {
-            // For text files, read as text
-            const text = await blob.text()
-            clipboardData.get(type)!.push(text)
-          }
-        }
-      }
+      const clipboardData = await parseClipboardApi(clipboardContents)
       setDataMap(clipboardData)
       setLastPastedType("Clipboard API")
     } catch (err) {
@@ -59,45 +36,10 @@ const PasteNode = () => {
 
   const onPaste = (event: React.ClipboardEvent) => {
     event.preventDefault()
-    const clipboardData = new Map<string, string[]>()
-
-    for (const item of event.clipboardData.items) {
-      if (!clipboardData.has(item.type)) {
-        clipboardData.set(item.type, [])
-      }
-
-      if (item.kind === "file") {
-        // Handle files (images, videos, audio, PDF)
-        const file = item.getAsFile()
-        if (file) {
-          if (
-            item.type.startsWith("image/") ||
-            item.type.startsWith("video/") ||
-            item.type.startsWith("audio/") ||
-            item.type === "application/pdf"
-          ) {
-            const objectUrl = URL.createObjectURL(file)
-            clipboardData.get(item.type)!.push(objectUrl)
-          } else {
-            // For other file types, try to read as text
-            const reader = new FileReader()
-            reader.onload = () => {
-              if (!clipboardData.has(item.type)) {
-                clipboardData.set(item.type, [])
-              }
-              clipboardData.get(item.type)!.push(reader.result as string)
-            }
-            reader.readAsText(file)
-          }
-        }
-      } else {
-        // Handle text data
-        const data = event.clipboardData.getData(item.type)
-        if (data) {
-          clipboardData.get(item.type)!.push(data)
-        }
-      }
-    }
+    const clipboardData = parsePasteItems(
+      event.clipboardData.items,
+      event.clipboardData
+    )
 
     if (clipboardData.size > 0) {
       setDataMap(clipboardData)
