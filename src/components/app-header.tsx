@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import {
   HelpCircleIcon,
@@ -12,12 +12,31 @@ import {
   LightbulbIcon,
   CopyIcon,
   CheckIcon,
+  ShareIcon,
+  FolderOpenIcon,
 } from "lucide-react"
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { CONTACT_EMAIL } from "@/lib/constants"
+import {
+  exportDataMapToJson,
+  downloadExportedJson,
+  importJsonToDataMap,
+  getExportSummary,
+  type ExportSummary,
+} from "@/lib/export"
 import { useClipboardDataMapStore } from "@/store/clipboard-data-map-store"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog"
 import { Button } from "./ui/button"
 import {
   Dialog,
@@ -44,8 +63,11 @@ const AppHeader = ({
   canNavigateDown,
 }: AppHeaderProps) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [exportSummary, setExportSummary] = useState<ExportSummary | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { copied, copy } = useCopyToClipboard()
-  const { dataMap, setDataMap, setActiveNodeId } = useClipboardDataMapStore()
+  const { dataMap, setDataMap, setActiveNodeId, setLastPastedType } =
+    useClipboardDataMapStore()
 
   const hasContent = dataMap.size > 0
 
@@ -54,11 +76,41 @@ const AppHeader = ({
     setActiveNodeId(null)
   }
 
+  const handleExport = () => {
+    const summary = getExportSummary(dataMap)
+    setExportSummary(summary)
+  }
+
+  const handleExportConfirm = () => {
+    const json = exportDataMapToJson(dataMap)
+    downloadExportedJson(json)
+    setExportSummary(null)
+  }
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const imported = importJsonToDataMap(reader.result as string)
+        setDataMap(imported)
+        setLastPastedType("JSON Import")
+        setActiveNodeId(null)
+      } catch {
+        alert("Invalid clipboard export file.")
+      }
+    }
+    reader.readAsText(file)
+
+    // Reset input so the same file can be re-imported
+    e.target.value = ""
+  }
+
   return (
     <>
-      <header
-        className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm"
-      >
+      <header className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 p-2">
@@ -77,6 +129,16 @@ const AppHeader = ({
           <div className="flex items-center gap-2">
             {hasContent && (
               <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="h-8 w-8 p-0"
+                  aria-label="Reset all content"
+                  title="Reset all content"
+                >
+                  <RotateCcwIcon className="size-4" />
+                </Button>
                 <div className="flex items-center rounded-md border">
                   <Button
                     variant="ghost"
@@ -114,15 +176,32 @@ const AppHeader = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleReset}
+                  onClick={handleExport}
                   className="h-8 w-8 p-0"
-                  aria-label="Reset all content"
-                  title="Reset all content"
+                  aria-label="Export clipboard data"
+                  title="Export clipboard data"
                 >
-                  <RotateCcwIcon className="size-4" />
+                  <ShareIcon className="size-4" />
                 </Button>
               </>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-8 w-8 p-0"
+              aria-label="Import clipboard data"
+              title="Import clipboard data"
+            >
+              <FolderOpenIcon className="size-4" />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -136,6 +215,74 @@ const AppHeader = ({
           </div>
         </div>
       </header>
+
+      <AlertDialog
+        open={exportSummary !== null}
+        onOpenChange={(open) => !open && setExportSummary(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Export Clipboard Data</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p className="text-gray-500">
+                  Only text-based formats are exported. Media files (images,
+                  videos, audio) are excluded.
+                </p>
+                {exportSummary && exportSummary.textTypes.length > 0 ? (
+                  <>
+                    <div>
+                      <p className="mb-1 font-medium text-gray-700">
+                        Export {exportSummary.textTypes.length} type(s):
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {exportSummary.textTypes.map((type) => (
+                          <span
+                            key={type}
+                            className="rounded bg-blue-100 px-2 py-0.5 font-mono text-xs text-blue-700"
+                          >
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    {exportSummary.skippedTypes.length > 0 && (
+                      <div>
+                        <p className="mb-1 font-medium text-gray-500">
+                          Skipped (media):
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {exportSummary.skippedTypes.map((type) => (
+                            <span
+                              key={type}
+                              className="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs text-gray-500 line-through"
+                            >
+                              {type}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p>
+                    No text-based data to export. Media files (images, videos,
+                    audio) are excluded.
+                  </p>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {exportSummary && exportSummary.textTypes.length > 0 && (
+              <AlertDialogAction onClick={handleExportConfirm}>
+                Export
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>
         <DialogContent className="flex h-[90vh] max-h-[90vh] max-w-2xl flex-col overflow-y-scroll p-0">
@@ -244,6 +391,15 @@ const AppHeader = ({
                           </div>
                         </div>
                       </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-indigo-500">📤</span>
+                        <div>
+                          <div className="font-medium">Export / Import</div>
+                          <div className="text-gray-600">
+                            Save and share clipboard data as JSON (text only)
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -262,11 +418,19 @@ const AppHeader = ({
                     </div>
                     <div>• Use the reset button to clear all content nodes</div>
                     <div>• Global shortcuts work from anywhere in the app</div>
+                    <div>
+                      • Export clipboard data as JSON to share with others (text
+                      formats only)
+                    </div>
+                    <div>
+                      • Import a previously exported JSON file to restore
+                      clipboard data
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="mb-3 text-sm font-semibold text-purple-700 flex items-center gap-2">
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-purple-700">
                     <MailIcon className="h-4 w-4" />
                     Feedback & Support
                   </h3>
@@ -281,14 +445,14 @@ const AppHeader = ({
                         <span>Feature suggestions</span>
                       </div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg border flex items-center justify-between gap-2">
-                      <p className="text-sm text-gray-700 font-mono break-all flex-1">
+                    <div className="flex items-center justify-between gap-2 rounded-lg border bg-gray-50 p-3">
+                      <p className="flex-1 font-mono text-sm break-all text-gray-700">
                         {CONTACT_EMAIL}
                       </p>
                       <Button
                         size="sm"
                         variant="ghost"
-                        className={`h-8 w-8 p-0 flex-shrink-0 transition-colors ${
+                        className={`h-8 w-8 flex-shrink-0 p-0 transition-colors ${
                           copied ? "bg-green-100 text-green-600" : ""
                         }`}
                         onClick={() => copy(CONTACT_EMAIL)}
